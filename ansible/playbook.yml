@@ -1,0 +1,49 @@
+---
+- name: nginx
+  hosts: localhost
+  remote_user: centos
+
+  tasks:
+  - name: ensure nginx is installed
+    yum:
+      name: nginx
+      state: latest
+  
+  - name: ensure nginx is started
+    service:
+      name: nginx
+      state: started
+  
+  - name: remove the default nginx website
+    file:
+      path: /usr/share/nginx/html/*
+      state: absent
+    notify: restart nginx
+  
+  - name: git clone of nginx conf
+    ansible.builtin.git:
+      repo: 'https://github.com/diranetafen/static-website-example.git'
+      version: master
+      dest: /usr/share/nginx/html/
+ 
+  - name: "Ouverture du port 80 et du port 443"
+    ansible.posix.firewalld:
+      zone: public
+      port: 80-443/tcp
+      permanent: yes
+      state: enabled
+
+  - name: "Rédémarrage de firewalld"
+    systemd:
+      name: firewalld
+      state: reloaded
+
+  - name: "Remplacement du port 80 par le 8080"
+    shell: sed -i 's/80 default_server/8080 default_server/g' /etc/nginx/nginx.conf
+
+ 
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
