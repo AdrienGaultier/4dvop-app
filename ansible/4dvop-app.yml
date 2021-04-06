@@ -6,7 +6,7 @@
       docker_container:
         name: nginx
         hostname: nginx
-        image: 61231/4dvop-nginx
+        image: adriengaultier/4dvop-nginx
         state: started
         ports:
           - "8080:8080"
